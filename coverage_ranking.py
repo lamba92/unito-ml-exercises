@@ -14,19 +14,19 @@ if __name__ == '__main__':
     - use the learnt classifier to obtain the scores for the objects in the training set (use the `predict_proba` method);
     '''
 
-    cancer_dataset = datasets.load_breast_cancer(True)
-    print(f"Shape of cancer dataset data: {shape(cancer_dataset[0])}")
-    print(f"Shape of cancer dataset targets: {shape(cancer_dataset[1])}")
+    X_dataset, y_dataset = datasets.load_breast_cancer(True)
+    print(f"Shape of cancer dataset data: {shape(X_dataset)}")
+    print(f"Shape of cancer dataset targets: {shape(y_dataset)}")
 
     clf = LogisticRegression(solver="liblinear")
 
     folds = 5
 
-    scores = cross_val_score(clf, X=cancer_dataset[0], y=cancer_dataset[1], cv=folds)
+    scores = cross_val_score(clf, X=X_dataset, y=y_dataset, cv=folds)
     print(f"\nCross validation accuracy scores with {folds} folds: {scores}")
 
-    clf.fit(cancer_dataset[0], cancer_dataset[1])
-    probability_estimates = clf.predict_proba(cancer_dataset[0])
+    clf.fit(X_dataset, y_dataset)
+    probability_estimates = clf.predict_proba(X_dataset)
     print(f"\nScores on on the test set {probability_estimates}")
 
     '''
@@ -37,16 +37,16 @@ if __name__ == '__main__':
     - plot those values on a scatter plot (hint: use the `matplotlib.pyplot.plot` function);
     '''
 
-    n_pos_examples = cancer_dataset[1].tolist().count(0)
-    n_neg_examples = cancer_dataset[1].tolist().count(1)
+    n_pos_examples = y_dataset.tolist().count(0)
+    n_neg_examples = y_dataset.tolist().count(1)
 
     print(f"\nPositive examples into the dataset: {n_pos_examples}")
     print(f"Negative examples into the dataset: {n_neg_examples}")
 
     dataset_information = []
 
-    for i in range(0, len(cancer_dataset[0])):
-        dataset_information.append((probability_estimates[i], cancer_dataset[0][i], cancer_dataset[1][i]))
+    for i in range(0, len(X_dataset)):
+        dataset_information.append((probability_estimates[i], X_dataset[i], y_dataset[i]))
 
     dataset_information.sort(key=lambda tuple: tuple[0][0], reverse=True)
 
@@ -94,15 +94,14 @@ if __name__ == '__main__':
 
     print(f"ROC AUC = {trapz(array(plot_coords[1]), array(plot_coords[0]))}")
 
-    positive_scores = []
-
-    for i in range(0, len(probability_estimates)):
-        positive_scores.insert(0, probability_estimates[i][0])
-
-    fpr, tpr, thresholds = roc_curve(cancer_dataset[1], positive_scores, pos_label=2)
+    fpr, tpr, thresholds = roc_curve(
+        list(map(lambda e: e[2], dataset_information)),
+        list(map(lambda e: e[0], dataset_information)),
+        pos_label=0
+    )
 
     plt.plot(fpr, tpr)
-    plt.xlabel("False Positive (FP)")
-    plt.ylabel("True Positive (TP)")
+    plt.xlabel("False Positive Rate (FPR)")
+    plt.ylabel("True Positive Rate(TPR)")
     plt.tight_layout()
     plt.show()

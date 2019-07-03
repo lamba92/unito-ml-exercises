@@ -1,14 +1,29 @@
+import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 
 if __name__ == "__main__":
     iris = load_iris()
+
+    unique, counts = np.unique(iris.target, return_counts=True)
+
+    plt.bar(
+        np.arange(iris.target_names.size),
+        counts,
+        align="center",
+        color=["red", "blue", "green"]
+    )
+    plt.xticks(
+        np.arange(iris.target_names.size),
+        iris.target_names
+    )
+
+    plt.show()
+
     clf_tree = DecisionTreeClassifier(
         criterion="entropy",
         random_state=300,
